@@ -1,248 +1,175 @@
-window.addEventListener('load', () => {
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-    })
-})
+// Add a new task.
+let taskInput = document.getElementById("new-task");
+
+// first button
+let addButton = document.getElementsByTagName("button")[0];
+
+// ul of #incomplete-tasks
+let incompleteTaskHolder = document.getElementById("incomplete-tasks");
+
+// completed-tasks
+let completedTasksHolder = document.getElementById("completed-tasks");
+
+/*---- Part 1 ----*/
+// function to create new task item
+let createNewTaskElement = function (taskString) {
+
+	let listItem = document.createElement("li");
+
+	// input (checkbox)
+	let checkBox = document.createElement("input"); // checkbox
+	// label
+	let label = document.createElement("label"); // label
+	// input (text)
+	let editInput = document.createElement("input"); // text
+	// button.edit
+	let editButton = document.createElement("button"); // edit button
+
+	// button.delete
+	let deleteButton = document.createElement("button"); // delete button
+
+	label.innerText = taskString;
+
+	// Each elements, needs appending
+	checkBox.type = "checkbox";
+	editInput.type = "text";
 
 
+	// innerText encodes special characters, HTML does not.
+	editButton.innerText = "Edit";	
+	editButton.className = "edit";
+	deleteButton.innerText = "Delete";
+	deleteButton.className = "delete";
 
-// the Date Functionality
+	// and appending.
+	listItem.appendChild(checkBox);
+	listItem.appendChild(label);
+	listItem.appendChild(editInput);
+	listItem.appendChild(editButton);
+	listItem.appendChild(deleteButton);
+	return listItem;
+}
+/*---- Part 2 ----*/
+let addTask = function () {
+	console.log("Add Task...");
 
-let today = new Date();
-let dd = String(today.getDate()).padStart(2,'0');
-let mm = String(today.getMonth() + 1).padStart(2, '0');
-let yyy = today.getFullYear();
-let hh= String(today.getHours()).padStart(2,'0');
-let min = String(today.getMinutes()).padStart(2,'0');
+	let listItem = createNewTaskElement(taskInput.value);
 
+	if (taskInput.value == "") {
+		return;
+	}
 
-let time = `${hh}:${min}`;
-today = `${dd}-${mm}-${yyy}`;
-let dateSpan = document.getElementById('dateSpan');
+	// Append listItem to incompleteTaskHolder
+	incompleteTaskHolder.appendChild(listItem);
+	bindTaskEvents(listItem, taskCompleted);
 
+	taskInput.value = "";
 
-dateSpan.innerHTML= `<strong>Date:</strong> ${today} |
- <strong>Time:</strong> ${time}`;
+}
 
- let dateSpanMobile = document.getElementById('dateSpanMobile');
- dateSpanMobile.innerHTML= `<strong>Date:</strong> ${today} |
- <strong>Time:</strong> ${time}`;
-
-
-
-//All the lets in the house
-let taskName = document.getElementById('taskName');
-let assignedTo = document.getElementById('assignedTo');
-let form = document.getElementById('form');
-let setStatus = document.getElementById('setStatus');
-let errorElement = document.getElementById('errorMsg');
-let description = document.getElementById('description');
-var modal = document.getElementById("form");
-var btn = document.getElementById("myBtn");
-var span = document.getElementById("closebtn");
-let dueDate = document.getElementById('dueDate');
-let formDelete = document.getElementById('formDelete');
-let closebtnedit = document.getElementById('closebtnedit');
-let card1 = document.getElementsByClassName("card1");
+/*---- Part 3 ----*/
+let editTask = function () {
+	console.log("Edit Task...");
+	console.log("Change 'edit' to 'save'");
 
 
+	let listItem = this.parentNode;
 
-let modalOverlay = document.getElementById('modalOverlay');
-let mobileAddTaskBtn = document.getElementById('addTaskBtnMobile');
+	let editInput = listItem.querySelector('input[type=text]');
+	let label = listItem.querySelector("label");
+	let containsClass = listItem.classList.contains("editMode");
+	// If class of the parent is .editmode
+	if (containsClass) {
+		label.innerText = editInput.value;
+	} else {
+		editInput.value = label.innerText;
+	}
+	listItem.classList.toggle("editMode");
+}
+
+/*---- Part 4 ----*/
+let deleteTask = function () {
+	console.log("Delete Task...");
+
+	let listItem = this.parentNode;
+	let ul = listItem.parentNode;
+	// Remove the parent list item from the ul.
+	ul.removeChild(listItem);
+
+}
+
+/*---- Part 5 ----*/
+
+let taskCompleted = function () {
+	console.log("Complete Task...");
+
+	// Append the task list item to the #completed-tasks
+	let listItem = this.parentNode;
+	completedTasksHolder.appendChild(listItem);
+	bindTaskEvents(listItem, taskIncomplete);
+
+}
+
+/*---- Part 6 ----*/
+let taskIncomplete = function () {
+	console.log("Incomplete Task...");
+	// Mark task as incomplete.
+	let listItem = this.parentNode;
+	incompleteTaskHolder.appendChild(listItem);
+	bindTaskEvents(listItem, taskCompleted);
+}
+
+/*---- Part 7 ----*/
+addButton.onclick = addTask;
+addButton.addEventListener("click", addTask);
+
+let bindTaskEvents = function (taskListItem, checkBoxEventHandler) {
+	console.log("bind list item events");
+	// select ListItems children
+	let checkBox = taskListItem.querySelector("input[type=checkbox]");
+	let editButton = taskListItem.querySelector("button.edit");
+	let deleteButton = taskListItem.querySelector("button.delete");
 
 
+	// Bind editTask to edit button.
+	editButton.onclick = editTask;
+	// Bind deleteTask to delete button.
+	deleteButton.onclick = deleteTask;
+	// Bind taskCompleted to checkBoxEventHandler.
+	checkBox.onchange = checkBoxEventHandler;
+}
 
+/*---- Part 8 ----*/
+// cycle over incompleteTaskHolder ul list items
+// for each list item
+for (let i = 0; i < incompleteTaskHolder.children.length; i++) {
 
-//Click events
+	// bind events to list items children(tasksCompleted)
+	bindTaskEvents(incompleteTaskHolder.children[i], taskCompleted);
+}
 
-  for (let i = 0; i < card1.length; i++) {
-    card1.item(i).addEventListener('click', function(){
-     formDelete.style.display = 'block'
-     modalOverlay.style.opacity = "0.3";
-     modalOverlay.style.backgroundColor = "gray";
-    });
- }
-btn.onclick = function() {
-  modal.style.display = "block";
-  modalOverlay.style.opacity = "0.3";
-  modalOverlay.style.backgroundColor = "gray";
+// cycle over completedTasksHolder ul list items
+for (let i = 0; i < completedTasksHolder.children.length; i++) {
+	// bind events to list items children(tasksIncompleted)
+	bindTaskEvents(completedTasksHolder.children[i], taskIncomplete);
+}
+
+/* When the user clicks on the button,
+toggle between hiding and showing the dropdown content */
+function myFunction() {
+    document.getElementById("myDropdown").classList.toggle("show");
+  }
   
-}
-span.onclick = function() {
-  modal.style.display = "none";
-  modalOverlay.style.opacity = "1";
-  modalOverlay.style.backgroundColor = "transparent";
-}
-closebtnedit.onclick = function() {
-    formDelete.style.display = "none";
-    modalOverlay.style.opacity = "1";
-    modalOverlay.style.backgroundColor = "transparent";
-  }
-mobileAddTaskBtn.onclick = function() {
-    modal.style.display = "block";
-    modalOverlay.style.opacity = "0.3";
-  modalOverlay.style.backgroundColor = "gray";
-   
-  };
-
- 
-let formValidated = false;
-
-//Validating the form fields
-form.addEventListener('submit', (e) => {
-    let messages = []
-    if(taskName.value === ''){
-        messages.push('Task Name is Required')
-    }
-
-    if (taskName.value.length < 8){
-        messages.push('Task Name must be longer than 8 characters')
-    }
-    if (assignedTo.value == "" ){
-        messages.push('Task must be assigned')
-    }
-    if (setStatus.value == ""){
-        messages.push('Please set a status.')
-    }
-    if (dueDate.value === ""){
-        messages.push('Please set a due date')
-    }
-    if (description.value == ""){
-        messages.push('Please write a description')
-    }
-    if (description.value.length < 20){
-        messages.push('Please write a description of at least 20 characters')
-    }
-    if (messages.length > 0){
-        e.preventDefault()
-        errorElement.innerText = messages.join('. ')
-    } else {
-        return formValidated = true;
-    }
-    
-})
-
-//Grey out past dates- making only future dates clickable
-dueDate.addEventListener("click", function () {
-    let today = new Date();
-    let dateToday = String(today.getDate()).padStart(2, "0");
-    let monthToday = String(today.getMonth() + 1).padStart(2, "0");
-    let yearToday = today.getFullYear();
-    let minDate = `${yearToday}-${monthToday}-${dateToday}`;
-    dueDate.min = minDate;
-  });
-
- //Begin Javascript for adding todo
-
- //class constructor
- class NewTask {
-    constructor(newTaskName, newAssignTo, newDueDate, newSelectStatus, newAddDescription, newID) {
-      this.newTaskName = newTaskName;
-      this.newAssignTo = newAssignTo;
-      this.newDueDate = newDueDate;
-      this.newSelectStatus = newSelectStatus;
-      this.newAddDescription = newAddDescription;
-      this.newID = Math.floor(Math.random()*10000);
-    }
-    incrementnewID() {
-        this.newID++;
+  // Close the dropdown menu if the user clicks outside of it
+  window.onclick = function(event) {
+    if (!event.target.matches('.dropbtn')) {
+      var dropdowns = document.getElementsByClassName("dropdown-content");
+      var i;
+      for (i = 0; i < dropdowns.length; i++) {
+        var openDropdown = dropdowns[i];
+        if (openDropdown.classList.contains('show')) {
+          openDropdown.classList.remove('show');
+        }
+      }
     }
   }
-
-
-//assigning lets
-
-let toDoItems = [];
- let inProgressItems = [];
- let reviewItems = [];
- let doneItems = [];
-let modalBtn = document.getElementById('modalBtn');
-
-let cardsToDo = document.getElementById('cardsToDo');
-let cardsinProgress = document.getElementById('cardsinProgress');
-let cardsReview = document.getElementById('cardsReview');
-let cardsDone = document.getElementById('cardsDone');
-
-
-/// extract information from input fields on submit button click
-
-form.addEventListener('submit',
-    function extractData(){
-
-    let ourNewTask = new NewTask (`${taskName.value}`,`${assignedTo.value}`,`${dueDate.value}`,
-        `${setStatus.value}`,`${description.value}`,`${description.value}`);
-
-    if (setStatus.value === "modalToDo") {
-        toDoItems.push(ourNewTask);
-
-        let card = `<div class=newCard><span><img src="./Resources/redbox.png" alt=""></span>
-            <h3> ${taskName.value} </h3> 
-            <p class="taskDescriptionText"> ${description.value} </p>
-            <img class= "profileCard" src="./Resources/ProfileUser1.png"> 
-            <hr> 
-            <p class="dueDateText"><strong>DUE:</strong><span>${dueDate.value}</span></p></div>`
-
-        function addNewCardDivToDo() {
-            const newDiv = document.createElement("div");
-            cardsToDo.insertAdjacentElement('beforeend', newDiv);
-            newDiv.classList.add("card1");
-            newDiv.innerHTML = card;
-        };
-         addNewCardDivToDo();
-         
-    } if (setStatus.value === "modalInProgress") {
-        inProgressItems.push(ourNewTask);
-
-        let card = `<span><img src="./Resources/yellowbox.png" alt=""></span>
-            <h3> ${taskName.value} </h3> 
-            <p class="taskDescriptionText"> ${description.value} </p>
-            <img class= "profileCard" src="./Resources/ProfileUser1.png"> 
-            <hr> 
-            <p class="dueDateText"><strong>DUE:</strong><span>${dueDate.value}</span></p>`
-
-        function addNewCardDivInProgress() {
-            const newDiv = document.createElement("div");
-            cardsinProgress.insertAdjacentElement('beforeend', newDiv);
-            newDiv.classList.add("card1");
-            newDiv.innerHTML = card;
-        };
-        addNewCardDivInProgress();
-
-    } if (setStatus.value === "modalReview") {
-        reviewItems.push(ourNewTask);
-
-        let card = `<span><img src="./Resources/bluebox.png" alt=""></span>
-            <h3> ${taskName.value} </h3> 
-            <p class="taskDescriptionText"> ${description.value} </p>
-            <img class= "profileCard" src="./Resources/ProfileUser1.png"> 
-            <hr> 
-            <p class="dueDateText"><strong>DUE:</strong><span>${dueDate.value}</span></p>`
-
-        function addNewCardDivCardsReviews() {
-            const newDiv = document.createElement("div");
-            cardsReview.insertAdjacentElement('beforeend', newDiv);
-            newDiv.classList.add("card1");
-            newDiv.innerHTML = card;
-        };
-        addNewCardDivCardsReviews();
-
-    } if (setStatus.value === "modalDone") {
-        doneItems.push(ourNewTask);
-
-        let card = `<span><img src="./Resources/greenbox.png" alt=""></span>
-            <h3> ${taskName.value} </h3> 
-            <p class="taskDescriptionText"> ${description.value} </p>
-            <img class= "profileCard" src="./Resources/ProfileUser1.png"> 
-            <hr> 
-            <p class="dueDateText"><strong>DUE:</strong><span>${dueDate.value}</span></p>`
-
-        function addNewCardDivcardsDone() {
-            const newDiv = document.createElement("div");
-            cardsDone.insertAdjacentElement('beforeend', newDiv);
-            newDiv.classList.add("card1");
-            newDiv.innerHTML = card;
-        };
-        addNewCardDivcardsDone();
-    }
-
-})
